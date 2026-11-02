@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Fotos e vídeos do verão em São Miguel.">
+    <title>Memórias, Açores</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="pages.css">
+</head>
+<body class="inner">
+    <header class="site-header">
+        <a class="wordmark" href="./index.html" aria-label="Açores, página inicial"><img src="azores-logo-bricolage-verde-escuro.svg" alt="Açores"></a>
+        <nav class="main-nav" aria-label="Navegação principal">
+            <a href="./islands.html">ilhas</a>
+            <a href="./memories.html" aria-current="page">memórias</a>
+            <a href="./about.html">sobre</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="page-head">
+            <h1>Memórias</h1>
+            <p class="lead">Fotos e vídeos do verão em São Miguel. Clica em qualquer um para ver maior.</p>
+            <div class="filters" id="typeFilters" role="group" aria-label="Filtrar por tipo"></div>
+            <div class="filters" id="islandFilters" role="group" aria-label="Filtrar por ilha"></div>
+        </div>
+        <div class="gallery" id="gallery"></div>
+        <p class="empty" id="empty" hidden>Ainda não há nada aqui.</p>
+    </main>
+    <footer class="site-footer">© Açores, memórias com amigos</footer>
+
+    <dialog id="lb" aria-label="Visualizador de fotos e vídeos">
+        <div id="lbStage"></div>
+        <div class="lb-bar">
+            <button type="button" id="lbPrev">Anterior</button>
+            <span id="lbCap"></span>
+            <button type="button" id="lbNext">Seguinte</button>
+            <button type="button" id="lbClose">Fechar</button>
+        </div>
+    </dialog>
+
+    <script>
+
+    const MEDIA = [
+      { src: "capa.jpg", island: "sao-miguel", title: "Lagoa do Fogo" },
+      { src: "data-photos/sete-cidades-1.jpg", island: "sao-miguel", title: "Sete Cidades" },
+      { src: "data-photos/sete-cidades-2.jpg", island: "sao-miguel", title: "Sete Cidades" },
+      { src: "data-photos/sete-cidades-3.jpg", island: "sao-miguel", title: "Sete Cidades" },
+      { src: "data-photos/sete-cidades-4.jpg", island: "sao-miguel", title: "Sete Cidades" },
+      { src: "data-photos/sete-cidades-5.jpg", island: "sao-miguel", title: "Sete Cidades" },
+      { src: "data-photos/cascata.jpg", island: "sao-miguel", title: "Cascata" },
+      { src: "data-photos/caminho-floresta.jpg", island: "sao-miguel", title: "Caminho na floresta" },
+      { src: "data-photos/por-do-sol.jpg", island: "sao-miguel", title: "Pôr do sol" },
+    ];
+
+    const NAMES = { "sao-miguel": "São Miguel", "santa-maria": "Santa Maria", "terceira": "Terceira", "graciosa": "Graciosa",
+      "sao-jorge": "São Jorge", "pico": "Pico", "faial": "Faial", "flores": "Flores", "corvo": "Corvo" };
+    const VIDEO = /\.(mp4|webm|mov|m4v|ogv)(\?.*)?$/i;
+    const $ = id => document.getElementById(id);
+    const gallery = $("gallery"), empty = $("empty");
+    const state = { type: "all", island: "all" };
+
+    const items = MEDIA.map(m => ({ ...m, video: VIDEO.test(m.src), ok: true }));
+    items.forEach(it => {
+      const label = it.title || (it.island ? NAMES[it.island] : "") || (it.video ? "Vídeo" : "Foto");
+      const el = document.createElement("button");
+      el.type = "button"; el.className = "tile" + (it.video ? " video" : "");
+      el.setAttribute("aria-label", (it.video ? "Reproduzir vídeo: " : "Abrir foto: ") + label);
+      const media = document.createElement(it.video ? "video" : "img");
+      if (it.video) { media.muted = true; media.playsInline = true; media.preload = "metadata"; if (it.poster) media.poster = it.poster; media.src = it.src + (it.poster ? "" : "#t=0.5"); }
+      else { media.alt = label; media.src = it.src; }
+      media.addEventListener(it.video ? "loadedmetadata" : "load", () => el.classList.add("ready"));
+      media.addEventListener("error", () => { it.ok = false; el.remove(); refresh(); });
+      el.append(media);
+      if (it.video) el.insertAdjacentHTML("beforeend", '<span class="badge">Vídeo</span>');
+      if (it.title || it.island) {
+        const cap = document.createElement("span"); cap.className = "cap"; cap.textContent = it.title || NAMES[it.island];
+        if (it.title && it.island) { const s = document.createElement("small"); s.textContent = NAMES[it.island]; cap.append(s); }
+        el.append(cap);
+      }
+      el.onclick = () => openLb(visible().indexOf(it));
+      it.el = el; it.label = label; gallery.append(el);
+    });
+
+    const live = () => items.filter(i => i.ok);
+    const visible = () => live().filter(i => !i.el.hidden);
+
+    // Filtros
+    function chips(box, entries, key) {
+      box.innerHTML = entries.map(([v, t]) => `<button type="button" data-v="${v}" aria-pressed="${state[key] === v}">${t}</button>`).join("");
+    }
+    function refresh() {
+      const L = live(), isl = [...new Set(L.map(i => i.island).filter(Boolean))];
+      if (state.island !== "all" && !isl.includes(state.island)) state.island = "all";
+      const types = [["all", "Todos"]];
+      if (L.some(i => !i.video)) types.push(["photo", "Fotos"]);
+      if (L.some(i => i.video)) types.push(["video", "Vídeos"]);
+      if (!types.some(t => t[0] === state.type)) state.type = "all";
+      chips($("typeFilters"), types.length > 2 ? types : [], "type");
+      chips($("islandFilters"), isl.length > 1 ? [["all", "Todas as ilhas"], ...isl.map(s => [s, NAMES[s]])] : [], "island");
+      L.forEach(i => i.el.hidden = !((state.type === "all" || (state.type === "video") === i.video) && (state.island === "all" || i.island === state.island)));
+      empty.hidden = visible().length > 0;
+    }
+    $("typeFilters").addEventListener("click", e => { const b = e.target.closest("button"); if (b) { state.type = b.dataset.v; refresh(); } });
+    $("islandFilters").addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      state.island = b.dataset.v; refresh();
+      history.replaceState(null, "", state.island === "all" ? location.pathname : "#" + state.island);
+    });
+    window.addEventListener("hashchange", () => { state.island = location.hash.slice(1) || "all"; refresh(); });
+    state.island = location.hash.slice(1) || "all";
+    refresh();
+
+    // Lightbox (fotos e vídeos)
+    const lb = $("lb"), stage = $("lbStage"); let list = [], pos = 0;
+    function show(k) {
+      pos = (k + list.length) % list.length;
+      const it = list[pos], node = document.createElement(it.video ? "video" : "img");
+      if (it.video) { node.controls = true; node.autoplay = true; node.playsInline = true; if (it.poster) node.poster = it.poster; }
+      else node.alt = it.label;
+      node.src = it.src; stage.replaceChildren(node);
+      $("lbCap").textContent = `${it.label}${it.title && it.island ? ", " + NAMES[it.island] : ""} (${pos + 1} / ${list.length})`;
+    }
+    function openLb(k) { list = visible(); show(k); lb.showModal(); }
+    $("lbPrev").onclick = () => show(pos - 1);
+    $("lbNext").onclick = () => show(pos + 1);
+    $("lbClose").onclick = () => lb.close();
+    lb.addEventListener("close", () => stage.replaceChildren());
+    lb.addEventListener("click", e => { if (e.target === lb) lb.close(); });
+    lb.addEventListener("keydown", e => { if (e.key === "ArrowLeft") show(pos - 1); if (e.key === "ArrowRight") show(pos + 1); });
+    </script>
+</body>
+</html>

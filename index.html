@@ -1,12 +1,104 @@
-<!DOCTYPE html>
-<html lang="en"
-
+<!doctype html>
+<html lang="pt-PT">
 <head>
-    <title>Azores Wonders</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-  </head>
-  
-  <body>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Açores, memórias com amigos.">
+    <title>Açores, memórias com amigos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="home.css">
+</head>
+<body class="home">
+    <header class="site-header">
+        <a class="wordmark" href="#top" aria-label="Açores, página inicial">
+            <img src="azores-logo-bricolage-verde-escuro.svg" alt="Açores">
+        </a>
+        <nav class="main-nav" aria-label="Navegação principal">
+            <a href="./islands.html">ilhas</a>
+            <a href="./memories.html">memórias</a>
+            <a href="./about.html">sobre</a>
+        </nav>
+    </header>
 
-  </body>
+    <main id="top">
+        <section class="cover">
+            <div class="cover-copy">
+                <h1>Nove ilhas, <em>um verão.</em></h1>
+                <p>Lagoas em crateras antigas, praias de areia negra e um verde que nunca acaba. Um diário de fotografias no meio do Atlântico.</p>
+            </div>
+        </section>
+
+        <section class="islands-index" id="islands">
+            <h2>Escolhe uma ilha para começar</h2>
+            <p class="lead">Clica numa ilha no mapa para ler a sua história e ver as suas fotos.</p>
+
+            <div class="map-wrap">
+                <svg id="azmap" viewBox="70 60 1170 690" role="group" aria-label="Mapa das nove ilhas dos Açores"></svg>
+            </div>
+            <p class="map-caption" id="mapCaption">Passa o rato por cima de uma ilha para a ver e clica para abrir a sua história.</p>
+            <div class="chips" id="chips" role="group" aria-label="Escolher uma ilha"></div>
+        </section>
+
+        <section class="memories-band">
+            <p>Fotos e pequenas histórias do verão.</p>
+            <a href="./memories.html">Ver as memórias</a>
+        </section>
+    </main>
+
+    <footer class="home-footer">© Açores, memórias com amigos</footer>
+
+    <script>
+    (() => {
+      const G = { E: "oriental", C: "central", W: "ocidental" };
+      const ISLANDS = [
+        { slug: "sao-miguel", name: "São Miguel", nick: "A ilha verde", g: "E", lon: -25.5, lat: 37.78, len: 64, wid: 16, ang: -5, lab: [0, 46, "middle"] },
+        { slug: "santa-maria", name: "Santa Maria", nick: "A ilha do sol", g: "E", lon: -25.08, lat: 36.96, len: 17, wid: 10, ang: -20, lab: [-30, 6, "end"] },
+        { slug: "terceira", name: "Terceira", nick: "A ilha lilás", g: "C", lon: -27.2, lat: 38.72, len: 29, wid: 17, ang: -15, lab: [0, 42, "middle"] },
+        { slug: "graciosa", name: "Graciosa", nick: "A ilha branca", g: "C", lon: -28.0, lat: 39.05, len: 13, wid: 8, ang: -50, lab: [0, -26, "middle"] },
+        { slug: "sao-jorge", name: "São Jorge", nick: "A ilha comprida", g: "C", lon: -28.05, lat: 38.68, len: 52, wid: 5, ang: -22, lab: [-14, -34, "middle"] },
+        { slug: "pico", name: "Pico", nick: "A ilha da montanha", g: "C", lon: -28.33, lat: 38.45, len: 38, wid: 13, ang: -15, lab: [8, 46, "middle"] },
+        { slug: "faial", name: "Faial", nick: "A ilha azul", g: "C", lon: -28.7, lat: 38.58, len: 21, wid: 14, ang: 0, lab: [-34, 5, "end"] },
+        { slug: "flores", name: "Flores", nick: "A ilha das flores", g: "W", lon: -31.2, lat: 39.45, len: 17, wid: 11, ang: -80, lab: [36, 6, "start"] },
+        { slug: "corvo", name: "Corvo", nick: "A ilha mais pequena", g: "W", lon: -31.1, lat: 39.67, len: 6, wid: 4, ang: 0, lab: [20, 5, "start"] },
+      ];
+      const X = lon => (lon + 31.7) * 176 + 20, Y = lat => (39.95 - lat) * 222 + 40, K = 2.5;
+      const rng = seed => { let s = seed % 2147483646 + 1; return () => (s = s * 16807 % 2147483647) / 2147483647; };
+      function shape(i) {
+        const r = rng([...i.slug].reduce((a, c) => a + c.charCodeAt(0), 0) * 7919);
+        const rx = Math.max(i.len * K / 2, 9), ry = Math.max(i.wid * K / 2, 7);
+        const a = i.ang * Math.PI / 180, cx = X(i.lon), cy = Y(i.lat), N = 14, amp = i.len > 20 ? 0.13 : 0.08, P = [];
+        for (let k = 0; k < N; k++) {
+          const t = 2 * Math.PI * k / N, n = 1 + (r() - 0.5) * 2 * amp, px = Math.cos(t) * rx * n, py = Math.sin(t) * ry * n;
+          P.push([cx + px * Math.cos(a) - py * Math.sin(a), cy + px * Math.sin(a) + py * Math.cos(a)]);
+        }
+        let d = `M${P[0][0].toFixed(1)},${P[0][1].toFixed(1)}`;
+        for (let k = 0; k < N; k++) {
+          const p0 = P[(k - 1 + N) % N], p1 = P[k], p2 = P[(k + 1) % N], p3 = P[(k + 2) % N];
+          d += `C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)},${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)},${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+        }
+        return d + "Z";
+      }
+      const svg = document.getElementById("azmap"), cap = document.getElementById("mapCaption"), idle = cap.textContent;
+      svg.innerHTML = ISLANDS.map(i => {
+        const d = shape(i), [dx, dy, an] = i.lab;
+        return `<a class="isl" href="./islands.html#${i.slug}" data-slug="${i.slug}" aria-label="${i.name}: ler a sua história">
+          <path class="hit" d="${d}"/><path class="shape" d="${d}"/>
+          <text x="${(X(i.lon) + dx).toFixed(1)}" y="${(Y(i.lat) + dy).toFixed(1)}" text-anchor="${an}">${i.name}</text></a>`;
+      }).join("");
+      document.getElementById("chips").innerHTML = ISLANDS.map(i => `<a href="./islands.html#${i.slug}">${i.name}</a>`).join("");
+      const say = e => { const g = e.target.closest(".isl"); if (!g) return; const i = ISLANDS.find(x => x.slug === g.dataset.slug); cap.textContent = `${i.name}, ${i.nick.toLowerCase()}, no grupo ${G[i.g]}. Clica para ler a sua história.`; };
+      svg.addEventListener("mouseover", say); svg.addEventListener("focusin", say);
+      svg.addEventListener("mouseleave", () => cap.textContent = idle); svg.addEventListener("focusout", () => cap.textContent = idle);
+    })();
+    </script>
+    <script>
+        const header = document.querySelector(".site-header");
+        const onScroll = () => header.classList.toggle("solid", window.scrollY > window.innerHeight * 0.7);
+        window.addEventListener("scroll", onScroll, { passive: true });
+        onScroll();
+    </script>
+</body>
+</html>

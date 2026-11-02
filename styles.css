@@ -1,0 +1,94 @@
+/* Estilos da página inicial. Carregado depois de styles.css, só afeta body.home */
+body.home {
+  --deep: #12302a; --lagoon: #1f5c6b; --moss: #4d6b2a; --sage: #d6e6b8; --mist: #eef3ec; --ink: #1b2a26;
+  --serif: "Playfair Display", Georgia, serif;
+  --sans: "DM Sans", system-ui, sans-serif;
+  margin: 0; font-family: var(--sans); color: var(--ink); background: var(--mist); line-height: 1.6;
+}
+html { scroll-behavior: smooth; }
+body.home * { box-sizing: border-box; }
+body.home a { color: inherit; text-decoration: none; }
+body.home a:focus-visible { outline: 2px solid var(--sage); outline-offset: 4px; }
+
+/* Header */
+body.home .site-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 22px clamp(20px, 7vw, 140px);
+  color: var(--deep); background: transparent;
+  transition: background .3s, color .3s, padding .3s;
+}
+body.home .wordmark img { height: 38px; display: block; }
+body.home .main-nav { display: flex; gap: clamp(20px, 3vw, 44px); font-weight: 500; font-size: 15px; }
+body.home .main-nav a { padding-bottom: 3px; border-bottom: 1px solid transparent; transition: border-color .2s; }
+body.home .main-nav a:hover { border-color: currentColor; }
+body.home .site-header.solid { background: var(--deep); color: #fff; padding-block: 14px; }
+body.home .site-header.solid .wordmark img { filter: brightness(0) invert(1); }
+
+/* Cover */
+body.home .cover {
+  position: relative; min-height: 100svh; display: flex; align-items: flex-end;
+  background:
+    linear-gradient(to top, rgba(10,28,22,.78) 0%, rgba(10,28,22,.35) 38%, transparent 62%),
+    url("capa.jpg") center / cover no-repeat;
+  padding: 0 clamp(20px, 7vw, 140px) clamp(48px, 10vh, 110px);
+  color: #fff;
+}
+body.home .cover-copy { position: static; margin: 0; padding: 0; }
+body.home .cover h1 {
+  margin: 0; font-family: var(--serif); font-weight: 400;
+  font-size: clamp(2.8rem, 8vw, 7rem); line-height: 1.02; letter-spacing: -.01em; max-width: 12ch;
+  color: #fff; animation: rise 1.4s cubic-bezier(.2,.7,.2,1) both;
+}
+body.home .cover h1 em { color: var(--sage); }
+body.home .cover p {
+  margin: 22px 0 0; max-width: 34ch; font-size: 1.05rem; opacity: .92;
+  animation: rise 1.4s .25s cubic-bezier(.2,.7,.2,1) both;
+}
+@keyframes rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+
+/* Islands index */
+body.home .islands-index { padding: clamp(64px, 12vw, 160px) clamp(20px, 7vw, 140px); }
+body.home .islands-index h2 {
+  margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(2rem, 4.5vw, 3.4rem);
+  line-height: 1.1; color: var(--deep); max-width: 16ch;
+}
+body.home .lead { margin: 18px 0 0; max-width: 52ch; color: #3d4f49; }
+/* Map */
+body.home .map-wrap { margin-top: clamp(32px, 5vw, 64px); background: #dce8e6; border-radius: 18px; padding: 8px; }
+body.home #azmap { display: block; width: 100%; height: auto; }
+body.home .isl { cursor: pointer; outline: none; }
+body.home .isl .shape { fill: var(--deep); stroke: none; transition: fill .2s; }
+body.home .isl .hit { fill: none; stroke: transparent; stroke-width: 18; pointer-events: all; }
+body.home .isl:hover .shape, body.home .isl:focus-visible .shape { fill: var(--moss); }
+body.home .isl:focus-visible .shape { stroke: #f2b134; stroke-width: 3; }
+body.home .isl text { font: 500 17px var(--sans); fill: var(--deep); pointer-events: none; }
+body.home .map-caption { margin: 16px 0 0; min-height: 1.6em; font-family: var(--serif); font-style: italic; font-size: 1.15rem; color: var(--deep); }
+body.home .chips { display: none; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+body.home .chips a { font: 500 14px var(--sans); padding: 8px 14px; border-radius: 999px; border: 1px solid #b9c9c2; color: var(--deep); }
+
+/* Memories band */
+body.home .memories-band {
+  background: var(--deep); color: #fff;
+  padding: clamp(56px, 9vw, 120px) clamp(20px, 7vw, 140px);
+  display: flex; flex-wrap: wrap; gap: 32px; justify-content: space-between; align-items: flex-end;
+}
+body.home .memories-band p { margin: 0; font-family: var(--serif); font-size: clamp(1.6rem, 3.5vw, 2.6rem); line-height: 1.2; max-width: 20ch; }
+body.home .memories-band a {
+  border: 1px solid var(--sage); color: var(--sage); padding: 14px 28px; border-radius: 999px;
+  font-weight: 500; transition: background .2s, color .2s;
+}
+body.home .memories-band a:hover { background: var(--sage); color: var(--deep); }
+
+body.home .home-footer { padding: 28px clamp(20px, 7vw, 140px); font-size: .85rem; color: #5d6f68; }
+
+@media (max-width: 800px) {
+  body.home .isl text { display: none; }
+  body.home .chips { display: flex; }
+  body.home .wordmark img { height: 30px; }
+  body.home .main-nav { font-size: 14px; gap: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  body.home .cover h1, body.home .cover p { animation: none; }
+}
